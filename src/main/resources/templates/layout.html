@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${pageTitle} ?: 'Admin panel'">Admin panel</title>
+
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctynMDr5pNlyI2bRjXh0JMhjYj6W+ALEwIH"
+            crossorigin="anonymous"/>
+</head>
+<body class="bg-light">
+
+<div th:fragment="layout(content)">
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">SpringBoot + Bootstrap</a>
+
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+        <th:block th:insert="${content}"></th:block>
+    </main>
+</div>
+
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-38Qn3N2h6g2W0VJm8o8sk7o6R8gV8YlQ0l2w0qYQ0a7m3G1fZ0Bz4q5i8W2iN3K"
+        crossorigin="anonymous"></script>
+</body>
+</html>
