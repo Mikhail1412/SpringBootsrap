@@ -17,6 +17,9 @@ public class User {
 
     private String password;
 
+    @Column(name = "age", nullable = false)
+    private int age;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -47,6 +50,14 @@ public class User {
         return email;
     }
 
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
     public void setEmail(String email) {
         this.email = email;
     }
@@ -65,5 +76,6 @@ public class User {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+
     }
 }

@@ -39,6 +39,7 @@ public class AdminController {
     @PostMapping("/create")
     public String create(@RequestParam String firstName,
                          @RequestParam String lastName,
+                         @RequestParam int age,
                          @RequestParam String email,
                          @RequestParam String password,
                          @RequestParam(name = "roleIds", required = false) List<Long> roleIds) {
@@ -46,6 +47,7 @@ public class AdminController {
         User u = new User();
         u.setFirstName(firstName);
         u.setLastName(lastName);
+        u.setAge(age);
         u.setEmail(email);
         u.setPassword(password);
 
@@ -74,11 +76,12 @@ public class AdminController {
     public String update(@PathVariable Long id,
                          @RequestParam String firstName,
                          @RequestParam String lastName,
+                         @RequestParam int age,
                          @RequestParam String email,
                          @RequestParam(name = "password", required = false) String password,
                          @RequestParam(name = "roleIds", required = false) List<Long> roleIds) {
 
-        userService.update(id, firstName, lastName, email, password, roleIds);
+        userService.update(id, firstName, lastName, age, email, password, roleIds);
         return "redirect:/admin";
     }
 

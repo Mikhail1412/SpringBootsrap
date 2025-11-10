@@ -9,7 +9,18 @@ public interface UserService {
     Optional<User> findByEmail(String email);
     Optional<User> findById(Long id);
     User save(User user);
-    User create(String firstName, String lastName, String email, String rawPassword, List<Long> roleIds);
-    User update(Long id, String firstName, String lastName, String email, String rawPassword, List<Long> roleIds);
+    User create(String firstName,
+                String lastName,
+                int age,
+                String email,
+                String rawPassword,
+                List<Long> roleIds);
+    User update(Long id,
+                String firstName,
+                String lastName,
+                int age,
+                String email,
+                String rawPassword,
+                List<Long> roleIds);
     void deleteById(Long id);
 }

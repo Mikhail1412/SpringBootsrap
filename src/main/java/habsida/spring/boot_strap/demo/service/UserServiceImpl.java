@@ -53,10 +53,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(String firstName, String lastName, String email, String rawPassword, List<Long> roleIds) {
+    public User create(String firstName,
+                       String lastName,
+                       int age,
+                       String email,
+                       String rawPassword,
+                       List<Long> roleIds) {
         User u = new User();
         u.setFirstName(firstName);
         u.setLastName(lastName);
+        u.setAge(age);
         u.setEmail(email);
         u.setPassword(maybeEncode(rawPassword));
         if (roleIds != null) {
@@ -66,10 +72,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User update(Long id, String firstName, String lastName, String email, String rawPassword, List<Long> roleIds) {
+    public User update(Long id,
+                       String firstName,
+                       String lastName,
+                       int age,
+                       String email,
+                       String rawPassword,
+                       List<Long> roleIds) {
         User u = users.findById(id).orElseThrow();
         u.setFirstName(firstName);
         u.setLastName(lastName);
+        u.setAge(age);
         u.setEmail(email);
         if (rawPassword != null && !rawPassword.isBlank()) {
             u.setPassword(maybeEncode(rawPassword));
