@@ -42,7 +42,19 @@ public class AdminController {
                          @RequestParam int age,
                          @RequestParam String email,
                          @RequestParam String password,
-                         @RequestParam(name = "roleIds", required = false) List<Long> roleIds) {
+                         @RequestParam(name = "roleIds", required = false) List<Long> roleIds,
+                         Model model) {
+
+        if (roleIds == null || roleIds.isEmpty()) {
+            model.addAttribute("roles", roleRepository.findAll());
+            model.addAttribute("selectedRoleIds", List.of());
+            model.addAttribute("errorRoles", "Выберите хотя бы одну роль.");
+            model.addAttribute("draftFirstName", firstName);
+            model.addAttribute("draftLastName", lastName);
+            model.addAttribute("draftAge", age);
+            model.addAttribute("draftEmail", email);
+            return "admin/add";
+        }
 
         User u = new User();
         u.setFirstName(firstName);
@@ -51,10 +63,8 @@ public class AdminController {
         u.setEmail(email);
         u.setPassword(password);
 
-        if (roleIds != null) {
-            var roles = new HashSet<>(roleRepository.findAllById(roleIds));
-            u.setRoles(roles);
-        }
+        var roles = new HashSet<>(roleRepository.findAllById(roleIds));
+        u.setRoles(roles);
 
         userService.save(u);
         return "redirect:/admin";
@@ -79,7 +89,23 @@ public class AdminController {
                          @RequestParam int age,
                          @RequestParam String email,
                          @RequestParam(name = "password", required = false) String password,
-                         @RequestParam(name = "roleIds", required = false) List<Long> roleIds) {
+                         @RequestParam(name = "roleIds", required = false) List<Long> roleIds,
+                         Model model) {
+
+        if (roleIds == null || roleIds.isEmpty()) {
+            User draft = new User();
+            draft.setId(id);
+            draft.setFirstName(firstName);
+            draft.setLastName(lastName);
+            draft.setAge(age);
+            draft.setEmail(email);
+
+            model.addAttribute("user", draft);
+            model.addAttribute("roles", roleRepository.findAll());
+            model.addAttribute("selectedRoleIds", List.of());
+            model.addAttribute("errorRoles", "Выберите хотя бы одну роль.");
+            return "admin/edit";
+        }
 
         userService.update(id, firstName, lastName, age, email, password, roleIds);
         return "redirect:/admin";

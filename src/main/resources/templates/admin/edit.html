@@ -36,12 +36,17 @@
 
         <div class="col-12">
             <label class="form-label">Roles</label>
-            <select class="form-select" multiple name="roleIds">
+            <select class="form-select"
+                    name="roleIds"
+                    multiple
+                    size="2"
+                    required>
                 <option th:each="r : ${roles}"
                         th:value="${r.id}"
-                        th:selected="${selectedRoleIds.contains(r.id)}"
+                        th:selected="${selectedRoleIds != null and selectedRoleIds.contains(r.id)}"
                         th:text="${r.name}">ROLE_USER</option>
             </select>
+            <div class="text-danger small mt-1" th:if="${errorRoles}" th:text="${errorRoles}"></div>
         </div>
 
         <div class="col-12 d-flex gap-2">
@@ -50,4 +55,5 @@
         </div>
     </form>
 </section>
+
 </html>
