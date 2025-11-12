@@ -5,28 +5,50 @@
 <section>
     <h3 class="mb-3">Edit user</h3>
 
-    <form th:action="@{/admin/update/{id}(id=${user.id})}" method="post" class="row g-3">
+    <form id="editForm" th:action="@{/admin/update/{id}(id=${user.id})}" method="post" class="row g-3" novalidate>
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
         <div class="col-md-6">
             <label class="form-label">First name</label>
-            <input class="form-control" name="firstName" th:value="${user.firstName}" required>
+            <input class="form-control"
+                   name="firstName"
+                   th:value="${user.firstName}"
+                   required
+                   pattern="^[A-Za-zА-Яа-яЁё]+$"
+                   title="Только буквы, без пробелов и цифр">
+            <div class="form-text text-danger" th:if="${errorFirstName}" th:text="${errorFirstName}"></div>
         </div>
 
         <div class="col-md-6">
             <label class="form-label">Last name</label>
-            <input class="form-control" name="lastName" th:value="${user.lastName}" required>
+            <input class="form-control"
+                   name="lastName"
+                   th:value="${user.lastName}"
+                   required
+                   pattern="^[A-Za-zА-Яа-яЁё]+$"
+                   title="Только буквы, без пробелов и цифр">
+            <div class="form-text text-danger" th:if="${errorLastName}" th:text="${errorLastName}"></div>
         </div>
 
         <div class="col-md-6">
             <label class="form-label">Age</label>
-            <input class="form-control" name="age" type="number" min="0" max="150"
-                   th:value="${user.age}" required>
+            <input class="form-control"
+                   name="age"
+                   type="number"
+                   min="1" max="150"
+                   th:value="${user.age}"
+                   required
+                   title="Возраст должен быть больше 0">
+            <div class="form-text text-danger" th:if="${errorAge}" th:text="${errorAge}"></div>
         </div>
 
         <div class="col-md-6">
             <label class="form-label">Email</label>
-            <input class="form-control" name="email" type="email" th:value="${user.email}" required>
+            <input class="form-control"
+                   name="email"
+                   type="email"
+                   th:value="${user.email}"
+                   required>
         </div>
 
         <div class="col-md-6">
@@ -37,6 +59,7 @@
         <div class="col-12">
             <label class="form-label">Roles</label>
             <select class="form-select"
+                    id="roleIds"
                     name="roleIds"
                     multiple
                     size="2"
@@ -46,7 +69,7 @@
                         th:selected="${selectedRoleIds != null and selectedRoleIds.contains(r.id)}"
                         th:text="${r.name}">ROLE_USER</option>
             </select>
-            <div class="text-danger small mt-1" th:if="${errorRoles}" th:text="${errorRoles}"></div>
+            <div class="form-text text-danger mt-1" th:if="${errorRoles}" th:text="${errorRoles}"></div>
         </div>
 
         <div class="col-12 d-flex gap-2">
@@ -55,5 +78,18 @@
         </div>
     </form>
 </section>
+
+<script>
+
+    document.getElementById('editForm').addEventListener('submit', function (e) {
+        const sel = document.getElementById('roleIds');
+        const anySelected = Array.from(sel.options).some(o => o.selected);
+        if (!anySelected) {
+            e.preventDefault();
+            alert('Выберите хотя бы одну роль');
+            sel.focus();
+        }
+    });
+</script>
 
 </html>

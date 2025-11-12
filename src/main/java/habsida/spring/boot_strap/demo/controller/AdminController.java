@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Controller
@@ -17,6 +18,8 @@ public class AdminController {
 
     private final UserService userService;
     private final RoleRepository roleRepository;
+
+    private static final Pattern NAME_RX = Pattern.compile("^\\p{L}+$");
 
     public AdminController(UserService userService, RoleRepository roleRepository) {
         this.userService = userService;
@@ -45,6 +48,36 @@ public class AdminController {
                          @RequestParam(name = "roleIds", required = false) List<Long> roleIds,
                          Model model) {
 
+        if (!NAME_RX.matcher(firstName).matches()) {
+            model.addAttribute("roles", roleRepository.findAll());
+            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
+            model.addAttribute("errorFirstName", "Имя: только буквы.");
+            model.addAttribute("draftFirstName", firstName);
+            model.addAttribute("draftLastName", lastName);
+            model.addAttribute("draftAge", age);
+            model.addAttribute("draftEmail", email);
+            return "admin/add";
+        }
+        if (!NAME_RX.matcher(lastName).matches()) {
+            model.addAttribute("roles", roleRepository.findAll());
+            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
+            model.addAttribute("errorLastName", "Фамилия: только буквы.");
+            model.addAttribute("draftFirstName", firstName);
+            model.addAttribute("draftLastName", lastName);
+            model.addAttribute("draftAge", age);
+            model.addAttribute("draftEmail", email);
+            return "admin/add";
+        }
+        if (age <= 0) {
+            model.addAttribute("roles", roleRepository.findAll());
+            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
+            model.addAttribute("errorAge", "Возраст должен быть больше 0.");
+            model.addAttribute("draftFirstName", firstName);
+            model.addAttribute("draftLastName", lastName);
+            model.addAttribute("draftAge", age);
+            model.addAttribute("draftEmail", email);
+            return "admin/add";
+        }
         if (roleIds == null || roleIds.isEmpty()) {
             model.addAttribute("roles", roleRepository.findAll());
             model.addAttribute("selectedRoleIds", List.of());
@@ -62,9 +95,7 @@ public class AdminController {
         u.setAge(age);
         u.setEmail(email);
         u.setPassword(password);
-
-        var roles = new HashSet<>(roleRepository.findAllById(roleIds));
-        u.setRoles(roles);
+        u.setRoles(new HashSet<>(roleRepository.findAllById(roleIds)));
 
         userService.save(u);
         return "redirect:/admin";
@@ -92,14 +123,35 @@ public class AdminController {
                          @RequestParam(name = "roleIds", required = false) List<Long> roleIds,
                          Model model) {
 
-        if (roleIds == null || roleIds.isEmpty()) {
-            User draft = new User();
-            draft.setId(id);
-            draft.setFirstName(firstName);
-            draft.setLastName(lastName);
-            draft.setAge(age);
-            draft.setEmail(email);
+        User draft = new User();
+        draft.setId(id);
+        draft.setFirstName(firstName);
+        draft.setLastName(lastName);
+        draft.setAge(age);
+        draft.setEmail(email);
 
+        if (!NAME_RX.matcher(firstName).matches()) {
+            model.addAttribute("user", draft);
+            model.addAttribute("roles", roleRepository.findAll());
+            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
+            model.addAttribute("errorFirstName", "Имя: только буквы.");
+            return "admin/edit";
+        }
+        if (!NAME_RX.matcher(lastName).matches()) {
+            model.addAttribute("user", draft);
+            model.addAttribute("roles", roleRepository.findAll());
+            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
+            model.addAttribute("errorLastName", "Фамилия: только буквы.");
+            return "admin/edit";
+        }
+        if (age <= 0) {
+            model.addAttribute("user", draft);
+            model.addAttribute("roles", roleRepository.findAll());
+            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
+            model.addAttribute("errorAge", "Возраст должен быть больше 0.");
+            return "admin/edit";
+        }
+        if (roleIds == null || roleIds.isEmpty()) {
             model.addAttribute("user", draft);
             model.addAttribute("roles", roleRepository.findAll());
             model.addAttribute("selectedRoleIds", List.of());
