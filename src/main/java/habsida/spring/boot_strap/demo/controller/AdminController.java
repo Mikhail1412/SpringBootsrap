@@ -9,7 +9,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Controller
@@ -18,8 +17,6 @@ public class AdminController {
 
     private final UserService userService;
     private final RoleRepository roleRepository;
-
-    private static final Pattern NAME_RX = Pattern.compile("^\\p{L}+$");
 
     public AdminController(UserService userService, RoleRepository roleRepository) {
         this.userService = userService;
@@ -42,58 +39,36 @@ public class AdminController {
     @PostMapping("/create")
     public String create(@RequestParam String firstName,
                          @RequestParam String lastName,
-                         @RequestParam int age,
+                         @RequestParam(required = false) Integer age,
                          @RequestParam String email,
                          @RequestParam String password,
                          @RequestParam(name = "roleIds", required = false) List<Long> roleIds,
                          Model model) {
 
-        if (!NAME_RX.matcher(firstName).matches()) {
-            model.addAttribute("roles", roleRepository.findAll());
-            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
-            model.addAttribute("errorFirstName", "Имя: только буквы.");
-            model.addAttribute("draftFirstName", firstName);
-            model.addAttribute("draftLastName", lastName);
-            model.addAttribute("draftAge", age);
-            model.addAttribute("draftEmail", email);
-            return "admin/add";
+        String nameRe = "^[\\p{L}\\s-]+$";
+
+        if (firstName == null || !firstName.trim().matches(nameRe)) {
+            return backToAddWithError(model, "Имя: только буквы/пробел/дефис.",
+                    firstName, lastName, age, email, roleIds);
         }
-        if (!NAME_RX.matcher(lastName).matches()) {
-            model.addAttribute("roles", roleRepository.findAll());
-            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
-            model.addAttribute("errorLastName", "Фамилия: только буквы.");
-            model.addAttribute("draftFirstName", firstName);
-            model.addAttribute("draftLastName", lastName);
-            model.addAttribute("draftAge", age);
-            model.addAttribute("draftEmail", email);
-            return "admin/add";
+        if (lastName == null || !lastName.trim().matches(nameRe)) {
+            return backToAddWithError(model, "Фамилия: только буквы/пробел/дефис.",
+                    firstName, lastName, age, email, roleIds);
         }
-        if (age <= 0) {
-            model.addAttribute("roles", roleRepository.findAll());
-            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
-            model.addAttribute("errorAge", "Возраст должен быть больше 0.");
-            model.addAttribute("draftFirstName", firstName);
-            model.addAttribute("draftLastName", lastName);
-            model.addAttribute("draftAge", age);
-            model.addAttribute("draftEmail", email);
-            return "admin/add";
+        if (age == null || age <= 0) {
+            return backToAddWithError(model, "Возраст должен быть положительным числом.",
+                    firstName, lastName, age, email, roleIds);
         }
         if (roleIds == null || roleIds.isEmpty()) {
-            model.addAttribute("roles", roleRepository.findAll());
-            model.addAttribute("selectedRoleIds", List.of());
-            model.addAttribute("errorRoles", "Выберите хотя бы одну роль.");
-            model.addAttribute("draftFirstName", firstName);
-            model.addAttribute("draftLastName", lastName);
-            model.addAttribute("draftAge", age);
-            model.addAttribute("draftEmail", email);
-            return "admin/add";
+            return backToAddWithError(model, "Выберите хотя бы одну роль.",
+                    firstName, lastName, age, email, roleIds);
         }
 
         User u = new User();
-        u.setFirstName(firstName);
-        u.setLastName(lastName);
+        u.setFirstName(firstName.trim());
+        u.setLastName(lastName.trim());
         u.setAge(age);
-        u.setEmail(email);
+        u.setEmail(email.trim());
         u.setPassword(password);
         u.setRoles(new HashSet<>(roleRepository.findAllById(roleIds)));
 
@@ -117,49 +92,32 @@ public class AdminController {
     public String update(@PathVariable Long id,
                          @RequestParam String firstName,
                          @RequestParam String lastName,
-                         @RequestParam int age,
+                         @RequestParam(required = false) Integer age,
                          @RequestParam String email,
                          @RequestParam(name = "password", required = false) String password,
                          @RequestParam(name = "roleIds", required = false) List<Long> roleIds,
                          Model model) {
 
-        User draft = new User();
-        draft.setId(id);
-        draft.setFirstName(firstName);
-        draft.setLastName(lastName);
-        draft.setAge(age);
-        draft.setEmail(email);
+        String nameRe = "^[\\p{L}\\s-]+$";
 
-        if (!NAME_RX.matcher(firstName).matches()) {
-            model.addAttribute("user", draft);
-            model.addAttribute("roles", roleRepository.findAll());
-            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
-            model.addAttribute("errorFirstName", "Имя: только буквы.");
-            return "admin/edit";
+        if (firstName == null || !firstName.trim().matches(nameRe)) {
+            return backToEditWithError(model, id, firstName, lastName, age, email,
+                    "Имя: только буквы/пробел/дефис.", roleIds);
         }
-        if (!NAME_RX.matcher(lastName).matches()) {
-            model.addAttribute("user", draft);
-            model.addAttribute("roles", roleRepository.findAll());
-            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
-            model.addAttribute("errorLastName", "Фамилия: только буквы.");
-            return "admin/edit";
+        if (lastName == null || !lastName.trim().matches(nameRe)) {
+            return backToEditWithError(model, id, firstName, lastName, age, email,
+                    "Фамилия: только буквы/пробел/дефис.", roleIds);
         }
-        if (age <= 0) {
-            model.addAttribute("user", draft);
-            model.addAttribute("roles", roleRepository.findAll());
-            model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
-            model.addAttribute("errorAge", "Возраст должен быть больше 0.");
-            return "admin/edit";
+        if (age == null || age <= 0) {
+            return backToEditWithError(model, id, firstName, lastName, age, email,
+                    "Возраст должен быть положительным числом.", roleIds);
         }
         if (roleIds == null || roleIds.isEmpty()) {
-            model.addAttribute("user", draft);
-            model.addAttribute("roles", roleRepository.findAll());
-            model.addAttribute("selectedRoleIds", List.of());
-            model.addAttribute("errorRoles", "Выберите хотя бы одну роль.");
-            return "admin/edit";
+            return backToEditWithError(model, id, firstName, lastName, age, email,
+                    "Выберите хотя бы одну роль.", roleIds);
         }
 
-        userService.update(id, firstName, lastName, age, email, password, roleIds);
+        userService.update(id, firstName.trim(), lastName.trim(), age, email.trim(), password, roleIds);
         return "redirect:/admin";
     }
 
@@ -167,5 +125,35 @@ public class AdminController {
     public String delete(@PathVariable Long id) {
         userService.deleteById(id);
         return "redirect:/admin";
+    }
+
+    private String backToAddWithError(Model model, String err,
+                                      String firstName, String lastName, Integer age, String email,
+                                      List<Long> roleIds) {
+        model.addAttribute("roles", roleRepository.findAll());
+        model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
+        model.addAttribute("errorRoles", err);
+        model.addAttribute("draftFirstName", firstName);
+        model.addAttribute("draftLastName", lastName);
+        model.addAttribute("draftAge", age);
+        model.addAttribute("draftEmail", email);
+        return "admin/add";
+    }
+
+    private String backToEditWithError(Model model, Long id,
+                                       String firstName, String lastName, Integer age, String email,
+                                       String err, List<Long> roleIds) {
+        User draft = new User();
+        draft.setId(id);
+        draft.setFirstName(firstName);
+        draft.setLastName(lastName);
+        if (age != null) draft.setAge(age);
+        draft.setEmail(email);
+
+        model.addAttribute("user", draft);
+        model.addAttribute("roles", roleRepository.findAll());
+        model.addAttribute("selectedRoleIds", roleIds == null ? List.of() : roleIds);
+        model.addAttribute("errorRoles", err);
+        return "admin/edit";
     }
 }
